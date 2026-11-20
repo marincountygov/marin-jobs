@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <!-- BEGIN generated security meta: python3 scripts/sync-security-meta.py --write -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://marincountygov.github.io/marin-os/catalog.json https://marincountygov.github.io/marin-os/data/lighthouse.json https://marincountygov.github.io/marin-os/data/tech.json https://api.github.com https://data.marincounty.gov; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <!-- END generated security meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Marin Jobs | County of Marin</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23000'/%3E%3Cg fill='none' stroke='%23e5b53b' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round' transform='translate(9,9) scale(1.25)'%3E%3Crect width='7' height='7' x='3' y='3' rx='1'/%3E%3Crect width='7' height='7' x='14' y='3' rx='1'/%3E%3Crect width='7' height='7' x='14' y='14' rx='1'/%3E%3Crect width='7' height='7' x='3' y='14' rx='1'/%3E%3C/g%3E%3C/svg%3E">
+    <meta name="description" content="Search and compare County of Marin job classifications and published pay rates.">
+    <link rel="stylesheet" href="vendor/marinos/marinos.css">
+    <link rel="stylesheet" href="assets/app.css">
+    <script src="vendor/marinos/marinos.js" defer></script>
+    <script src="assets/search-layout.js" defer></script>
+    <script src="assets/job-pay-core.js" defer></script>
+    <script src="assets/app.js" defer></script>
+  </head>
+  <body>
+    <noscript>
+      <div class="container app-alert app-alert--warning">
+        JavaScript is required to display the MarinOS interface and use this application.
+      </div>
+    </noscript>
+
+    <marin-os-banner></marin-os-banner>
+
+    <marin-app-header app-name="Marin Jobs" app-description="Search and compare County of Marin job classifications and published pay rates.">
+      <template data-icon>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M6 7v13h12V7M9 7V4h6v3M9 12h6M9 16h4"/></svg>
+      </template>
+    </marin-app-header>
+
+    <main id="main" class="container app-main">
+      <!-- Keep the primary workflow first; the shell uses it as the default view. -->
+      <section id="start" data-tab-section="start" aria-label="Marin Jobs">
+    
+    
+    
+    <section id="explore" aria-labelledby="explore-title">
+      <h2 class="visually-hidden" id="explore-title">Job class search</h2>
+      <div id="job-error" class="app-alert app-alert--danger" role="alert" hidden>
+        <p id="job-error-text">Could not load job classes and pay rates.</p><button type="button" id="job-retry" class="action-button">Retry</button>
+      </div>
+      <div class="search-layout">
+        <div class="search-side">
+          <button type="button" id="filter-toggle" class="filter-toggle" data-filter-toggle="job-classes" aria-controls="filter-panel"></button>
+          <aside id="filter-panel" class="search-sidebar" aria-labelledby="filter-panel-title" data-open="false">
+            <div class="search-panel-header"><h2 class="search-panel-title" id="filter-panel-title">Filter</h2><button type="button" id="reset-filters-button" class="action-button" aria-label="Reset search and filters" title="Reset search and filters"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button></div>
+            <div class="search-input-field"><label for="job-search-input">Search title, class code, or pay</label><input type="search" id="job-search-input" data-search-input placeholder="Try analyst, nurse, 037A…" autocomplete="off"></div>
+            <div class="job-sort-controls"><label for="job-sort">Sort by</label><select id="job-sort"><option value="title">Title</option><option value="job_class_code">Class code</option><option value="min_yearly">Minimum yearly pay</option><option value="max_yearly">Maximum yearly pay</option><option value="min_hourly">Minimum hourly pay</option><option value="max_hourly">Maximum hourly pay</option><option value="hours_per_period">Hours per biweekly period</option><option value="number_of_steps">Number of steps</option></select><label for="job-sort-direction">Direction</label><select id="job-sort-direction"><option value="asc">A to Z / Low to high</option><option value="desc">Z to A / High to low</option></select></div>
+            <fieldset class="search-facet-group" id="titlegroup-facet"><legend>Title group</legend><details class="mm-facet-group"><summary>All title groups</summary><ul id="titlegroup-options" class="search-facet-list"></ul></details></fieldset>
+            <fieldset class="search-facet-group" id="payband-facet"><legend>Maximum yearly pay</legend><details class="mm-facet-group"><summary>All pay bands</summary><ul id="payband-options" class="search-facet-list"></ul></details></fieldset>
+            <fieldset class="search-facet-group" id="hours-facet"><legend>Hours per biweekly period</legend><details class="mm-facet-group"><summary>All schedules</summary><ul id="hours-options" class="search-facet-list"></ul></details></fieldset>
+            <fieldset class="search-facet-group" id="steps-facet"><legend>Number of pay steps</legend><details class="mm-facet-group"><summary>All step counts</summary><ul id="steps-options" class="search-facet-list"></ul></details></fieldset>
+          </aside>
+        </div>
+        <div class="search-results">
+          <p id="job-results-count" class="search-results-count app-help-text" role="status" aria-live="polite" aria-atomic="true">Loading job classes and pay rates…</p>
+          <p id="job-feed-status" class="app-help-text" hidden></p>
+          <div id="job-summary" class="job-summary" hidden><span><strong id="job-total">0</strong> job classes</span><span><strong id="job-pay-schedules">0</strong> biweekly schedules</span><span><strong id="job-step-patterns">0</strong> step patterns</span><span><strong id="job-highest">—</strong> highest yearly maximum</span></div>
+          <section id="job-compare" class="app-card job-compare" aria-labelledby="job-compare-title" hidden><div class="job-inline-heading"><h2 id="job-compare-title">Compare selected job classes</h2><button type="button" id="job-clear-compare" class="action-button">Clear comparison</button></div><p id="job-compare-summary" class="app-help-text" role="status" aria-live="polite"></p><div id="job-compare-table" class="app-table-wrap"></div></section>
+          <p id="job-empty" class="app-empty" hidden>No job classes match your search.</p>
+          <ul id="job-results" class="search-results-list" aria-label="Job classifications"></ul>
+          <div id="job-exports" class="job-exports" hidden><button type="button" id="job-export-csv" class="action-button">Export filtered CSV</button><button type="button" id="job-export-json" class="action-button">Export filtered JSON</button></div>
+        </div>
+      </div>
+    </section>
+    
+  </section>
+
+      <!-- Supply app-owned content only; the shell generates sections and headings. -->
+      <marin-app-info app-name="Marin Jobs" repo="marin-jobs" security-src="security.json">
+        <template data-about>
+          <p>This tool reads the County's public <a href="https://data.marincounty.gov/d/w7uw-fvda" target="_blank" rel="noopener noreferrer">Job Classifications and Pay Rates dataset (opens in a new tab)</a>. Pay ranges belong to job classes, not individual people. They do not include overtime, deductions, premiums, or individual benefit costs.</p><p>Search, filtering, comparison, and exports happen in your browser. The public dataset is temporarily cached in your browser; your search and comparison choices are not saved. Pay rates and other data may change when the County updates the source dataset.</p>
+        </template>
+        <template data-accessibility>
+          <p>Marin Jobs aims to meet WCAG 2.2 AA. Search, filters and results are standard form controls and lists, and result counts are announced as they change.</p>
+          <p>A formal accessibility review has not been completed yet. If you find a problem, use the Feedback button or contact the County's innovation team.</p>
+        </template>
+      </marin-app-info>
+    </main>
+
+    <marin-app-footer app-name="Marin Jobs"></marin-app-footer>
+    <marin-app-feedback></marin-app-feedback>
+  </body>
+</html>
