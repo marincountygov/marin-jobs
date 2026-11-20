@@ -56,7 +56,7 @@ def test_lookup(browser, base):
     require(page.locator('#meeting-cost').count() == 0 and 'meeting' not in page.locator('main').inner_text().lower(), 'Meeting estimator not mounted')
     require(page.locator('h1').count() == 1, 'Page uses one h1')
     require(page.locator('#job-error').is_hidden(), 'No error state on successful load')
-    require(page.locator('script[src^="assets/"]').count() == 3, 'Only the app\'s own scripts are loaded')
+    require(page.locator('script[src^="assets/"]').count() == 2, 'Only the app\'s own scripts are loaded')
 
     # Untrusted County strings are escaped rather than interpreted as markup.
     require(page.locator('#job-results script').count() == 0, 'Untrusted title does not inject scripts')
@@ -70,13 +70,13 @@ def test_lookup(browser, base):
     require('$135.70' in counsel.locator('.job-card-details table tbody').inner_text(), 'Published step hourly rate displayed')
 
     # Search, URL state and clearing the filters.
-    if page.locator('#filter-panel').get_attribute('data-open') == 'false':
-        page.locator('#filter-toggle').click()
+    if page.locator('#job-classes-filter-panel').get_attribute('data-open') == 'false':
+        page.locator('#job-classes-filter-panel-toggle').click()
     page.locator('#job-search-input').fill('037A')
     page.wait_for_function('document.getElementById("job-results-count").textContent.startsWith("1 of 5")')
     require(visible_titles(page) == ['ACCOUNTANT I'], 'Search finds class by code')
-    require('q=037a' in page.url, 'Search can be shared by query parameter')
-    page.locator('#reset-filters-button').click()
+    require('q=037A' in page.url, 'Search can be shared by query parameter')
+    page.locator('#job-classes-filter-panel .action-button').click()
     require(len(visible_titles(page)) == 5, 'Reset restores results')
     require('q=' not in page.url, 'Reset clears URL search parameter')
 
@@ -84,15 +84,15 @@ def test_lookup(browser, base):
     page.locator('#payband-facet input[value="250k-plus"]').check()
     require(visible_titles(page) == ['ASSISTANT COUNTY COUNSEL'], 'Pay-band facet filters classes')
     require('payband=250k-plus' in page.url, 'Facet state written to URL')
-    page.locator('#reset-filters-button').click()
+    page.locator('#job-classes-filter-panel .action-button').click()
     page.locator('#hours-facet details').evaluate('(details) => { details.open = true; }')
     page.locator('#hours-facet input[value="75"]').check()
     require(sorted(visible_titles(page)) == ['ACCOUNTANT I', 'NURSE'], 'Hours facet filters classes')
-    page.locator('#reset-filters-button').click()
+    page.locator('#job-classes-filter-panel .action-button').click()
     page.locator('#steps-facet details').evaluate('(details) => { details.open = true; }')
     page.locator('#steps-facet input[value="3"]').check()
     require(visible_titles(page) == ['ASSISTANT COUNTY COUNSEL'], 'Step-count facet filters classes')
-    page.locator('#reset-filters-button').click()
+    page.locator('#job-classes-filter-panel .action-button').click()
 
     page.locator('#job-sort').select_option('max_yearly')
     page.locator('#job-sort-direction').select_option('desc')
@@ -125,7 +125,7 @@ def test_lookup(browser, base):
     rows = list(csv.reader(io.StringIO(Path(download.path()).read_text(encoding='utf-8-sig'))))
     require(len(rows) == 2 and rows[1][0] == 'ACCOUNTANT I', 'CSV export contains one filtered class')
     require(rows[1][1] == '037A' and rows[1][8] == '41.09', 'CSV includes original step data')
-    page.locator('#reset-filters-button').click()
+    page.locator('#job-classes-filter-panel .action-button').click()
     page.locator('#job-search-input').fill('DANGEROUS')
     page.wait_for_function('document.getElementById("job-results-count").textContent.startsWith("1 of 5")')
     with page.expect_download() as download_event:
@@ -134,7 +134,7 @@ def test_lookup(browser, base):
     require(risky[1][0].startswith("'=DANGEROUS()"), 'CSV protects against spreadsheet formulas')
 
     # Copy link remains powered by the MarinOS shell.
-    page.locator('#reset-filters-button').click()
+    page.locator('#job-classes-filter-panel .action-button').click()
     page.locator('#job-results > li[data-job-id="0"] button.job-copy-link').click()
     page.wait_for_function('document.getElementById("app-status-message").textContent.includes("Copied job class link")')
     copied = page.evaluate('navigator.clipboard.readText()')

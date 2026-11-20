@@ -92,17 +92,39 @@
     }
   }
 
-  function createFacets(field, name, labels, orderedValues) {
+  // The filter column is drawn by the shell from filters.json. This app supplies the choices (counted from the rows)
+  // and does the matching; the column keeps the search, the choices, the address and the result message.
+  const column = document.querySelector("[data-filter-column]");
+  const FACETS = [["titlegroup", "titlegroup"], ["payband", "payband"], ["hours", "hours_per_period"], ["steps", "number_of_steps"]];
+
+  function facetOptions(field, labels, orderedValues) {
     const counts = new Map();
     rows.forEach((row) => {
       const value = String(row[field] ?? "");
       if (value) counts.set(value, (counts.get(value) || 0) + 1);
     });
     const values = orderedValues || Array.from(counts.keys()).sort((a, b) => Number(a) - Number(b));
-    $(name + "-options").innerHTML = values.filter((value) => counts.has(value)).map((value) => `
-      <li><label><input type="checkbox" data-facet-filter="${name}" value="${escapeHtml(value)}">
-        ${escapeHtml(labels[value] || value)} <span class="search-facet-count">(${counts.get(value)})</span></label></li>
-    `).join("");
+    return values.filter((value) => counts.has(value)).map((value) => ({ value, label: labels[value] || value, count: counts.get(value) }));
+  }
+
+  function applyFilter() {
+    if (!column?.setResults || !rows.length) return;
+    const state = column.filterState;
+    const query = state.search.trim().toLowerCase();
+    const items = [...list.querySelectorAll("[data-search-item]")];
+    let visible = 0;
+    items.forEach((item) => {
+      const matchesQuery = !query || (item.dataset.searchText || "").includes(query);
+      const matchesFacets = FACETS.every(([name]) => {
+        const selected = state.groups[name];
+        if (!selected.length) return true;
+        const itemValues = (item.dataset[`facet${name.charAt(0).toUpperCase()}${name.slice(1)}`] || "").split("|");
+        return selected.some((value) => itemValues.includes(value));
+      });
+      item.hidden = !(matchesQuery && matchesFacets);
+      if (!item.hidden) visible += 1;
+    });
+    column.setResults(visible, visible ? `${visible} of ${items.length} job classes` : undefined);
   }
 
   function sortRows() {
@@ -171,21 +193,17 @@
     $("job-exports").hidden = false;
     list.innerHTML = rows.map(cardHtml).join("");
 
-    createFacets("titlegroup", "titlegroup", {}, [...Core.TITLE_GROUPS, "Other"]);
-    createFacets("payband", "payband", Object.fromEntries([...Core.PAY_BANDS.map((item) => [item.value, item.label]), ["unknown", "Not published"]]), [...Core.PAY_BANDS.map((item) => item.value), "unknown"]);
-    createFacets("hours_per_period", "hours", {}, undefined);
-    createFacets("number_of_steps", "steps", {}, undefined);
+    const offer = () => {
+      column.setOptions("titlegroup", facetOptions("titlegroup", {}, [...Core.TITLE_GROUPS, "Other"]));
+      column.setOptions("payband", facetOptions("payband", Object.fromEntries([...Core.PAY_BANDS.map((item) => [item.value, item.label]), ["unknown", "Not published"]]), [...Core.PAY_BANDS.map((item) => item.value), "unknown"]));
+      column.setOptions("hours", facetOptions("hours_per_period", {}));
+      column.setOptions("steps", facetOptions("number_of_steps", {}));
+      applyFilter();
+    };
     sortRows();
-    window.MarinSearchLayout.init({
-      input: $("job-search-input"),
-      items: () => [...list.querySelectorAll("[data-search-item]")],
-      facetGroups: ["titlegroup", "payband", "hours", "steps"].map((name) => ({ name, container: $(name + "-facet") })),
-      countEl,
-      emptyEl: $("job-empty"),
-      resetButton: $("reset-filters-button"),
-      toggleButton: $("filter-toggle"),
-      formatCount: (visible, total) => `${visible} of ${total} job classes`,
-    });
+    // The column is drawn once its own file has loaded, which can be before or after the rows arrive.
+    if (column.setOptions) offer();
+    else column.addEventListener("marin-filter-ready", offer, { once: true });
     refreshCompare();
   }
 
@@ -249,7 +267,7 @@
   $("job-retry").addEventListener("click", () => loadData(true));
   $("job-sort").addEventListener("change", sortRows);
   $("job-sort-direction").addEventListener("change", sortRows);
-  $("reset-filters-button").addEventListener("click", () => { $("job-sort").value = "title"; $("job-sort-direction").value = "asc"; sortRows(); });
+  column.addEventListener("marin-filter-change", applyFilter);
   $("job-clear-compare").addEventListener("click", () => { selectedIds.clear(); refreshCompare(); });
   list.addEventListener("change", (event) => {
     if (!event.target.matches(".job-compare-checkbox")) return;
