@@ -2,7 +2,10 @@
   "$schema": "vendor/marinos/filter-panel.schema.json",
   "schemaVersion": "1.0.0",
   "search": {
-    "id": "job-search-input"
+    "id": "job-search-input",
+    "fields": [
+      "searchText"
+    ]
   },
   "groups": [
     {
@@ -12,7 +15,8 @@
       "allLabel": "All title groups",
       "options": {
         "app": true
-      }
+      },
+      "field": "titlegroup"
     },
     {
       "type": "checkbox",
@@ -21,7 +25,8 @@
       "allLabel": "All pay bands",
       "options": {
         "app": true
-      }
+      },
+      "field": "payband"
     },
     {
       "type": "checkbox",
@@ -30,7 +35,8 @@
       "allLabel": "All biweekly hours",
       "options": {
         "app": true
-      }
+      },
+      "field": "hours_per_period"
     },
     {
       "type": "checkbox",
@@ -39,7 +45,8 @@
       "allLabel": "All step counts",
       "options": {
         "app": true
-      }
+      },
+      "field": "number_of_steps"
     }
   ]
 }

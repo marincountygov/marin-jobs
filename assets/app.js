@@ -95,7 +95,6 @@
   // The filter column is drawn by the shell from filters.json. This app supplies the choices (counted from the rows)
   // and does the matching; the column keeps the search, the choices, the address and the result message.
   const column = document.querySelector("[data-filter-column]");
-  const FACETS = [["titlegroup", "titlegroup"], ["payband", "payband"], ["hours", "hours_per_period"], ["steps", "number_of_steps"]];
 
   function facetOptions(field, labels, orderedValues) {
     const counts = new Map();
@@ -107,24 +106,15 @@
     return values.filter((value) => counts.has(value)).map((value) => ({ value, label: labels[value] || value, count: counts.get(value) }));
   }
 
+  // The column does the matching: filters.json names the row field each group looks at and the fields the search reads.
   function applyFilter() {
     if (!column?.setResults || !rows.length) return;
-    const state = column.filterState;
-    const query = state.search.trim().toLowerCase();
-    const items = [...list.querySelectorAll("[data-search-item]")];
-    let visible = 0;
-    items.forEach((item) => {
-      const matchesQuery = !query || (item.dataset.searchText || "").includes(query);
-      const matchesFacets = FACETS.every(([name]) => {
-        const selected = state.groups[name];
-        if (!selected.length) return true;
-        const itemValues = (item.dataset[`facet${name.charAt(0).toUpperCase()}${name.slice(1)}`] || "").split("|");
-        return selected.some((value) => itemValues.includes(value));
-      });
-      item.hidden = !(matchesQuery && matchesFacets);
-      if (!item.hidden) visible += 1;
+    const matching = new Set(column.filter(rows).map((row) => row.id));
+    list.querySelectorAll("[data-search-item]").forEach((item) => {
+      item.hidden = !matching.has(Number(item.dataset.jobId));
     });
-    column.setResults(visible, visible ? `${visible} of ${items.length} job classes` : undefined);
+    column.updateCounts(rows);
+    column.setResults(matching.size, matching.size ? `${matching.size} of ${rows.length} job classes` : undefined);
   }
 
   function sortRows() {
@@ -157,18 +147,19 @@
     return `<div class="app-table-wrap"><table><caption>Published salary steps for ${escapeHtml(row.title)}</caption><thead><tr><th scope="col">Pay step</th><th scope="col">Hourly</th><th scope="col">Yearly</th></tr></thead><tbody>${contents}</tbody></table></div>`;
   }
 
-  function cardHtml(row) {
-    const searchable = [row.title, row.job_class_code, row.hours_per_period, row.number_of_steps, row.min_yearly, row.max_yearly,
+  // Everything the search can find in a class, lowercased: its words and its pay, as numbers and as formatted dollars.
+  function searchTextFor(row) {
+    return [row.title, row.job_class_code, row.hours_per_period, row.number_of_steps, row.min_yearly, row.max_yearly,
       row.min_hourly, row.max_hourly, ...row.steps.flatMap((step) => [step.hourly, step.yearly])]
       .filter((value) => value !== null && value !== undefined)
       .flatMap((value) => [String(value), typeof value === "number" ? numberFormat.format(value) : ""])
       .join(" ").toLowerCase();
+  }
+
+  function cardHtml(row) {
     const rawJson = escapeHtml(JSON.stringify(row.raw, null, 2));
     const link = `${window.location.origin}${window.location.pathname}?q=${encodeURIComponent(row.job_class_code || row.title)}`;
-    return `<li class="app-card" data-search-item data-job-id="${row.id}"
-      data-search-text="${escapeHtml(searchable)}" data-facet-titlegroup="${escapeHtml(row.titlegroup)}"
-      data-facet-payband="${escapeHtml(row.payband)}" data-facet-hours="${escapeHtml(row.hours_per_period ?? "")}"
-      data-facet-steps="${escapeHtml(row.number_of_steps)}">
+    return `<li class="app-card" data-search-item data-job-id="${row.id}">
       <div class="job-card-header"><div><h3 class="job-card-title">${escapeHtml(row.title)}</h3><p class="job-card-code">Class code: ${escapeHtml(row.job_class_code || "Not listed")}</p></div></div>
       <p class="job-card-pay">${escapeHtml(money(row.min_yearly))}–${escapeHtml(money(row.max_yearly))} per year</p>
       <p class="job-card-meta">${escapeHtml(money(row.min_hourly, true))}–${escapeHtml(money(row.max_hourly, true))} per hour · ${escapeHtml(row.hours_per_period ?? "Unknown")} hours/period · ${escapeHtml(row.number_of_steps)} steps</p>
@@ -191,6 +182,7 @@
     $("job-highest").textContent = yearlyMaximums.length ? money(Math.max(...yearlyMaximums)) : "Not published";
     $("job-summary").hidden = false;
     $("job-exports").hidden = false;
+    rows.forEach((row) => { row.searchText = searchTextFor(row); });
     list.innerHTML = rows.map(cardHtml).join("");
 
     const offer = () => {
