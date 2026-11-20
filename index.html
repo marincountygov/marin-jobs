@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="vendor/marinos/marinos.css">
     <link rel="stylesheet" href="assets/app.css">
     <script src="vendor/marinos/marinos.js" defer></script>
-    <script src="assets/search-layout.js" defer></script>
     <script src="assets/job-pay-core.js" defer></script>
     <script src="assets/app.js" defer></script>
   </head>
@@ -44,24 +43,13 @@
         <p id="job-error-text">Could not load job classes and pay rates.</p><button type="button" id="job-retry" class="action-button">Retry</button>
       </div>
       <div class="search-layout">
-        <div class="search-side">
-          <button type="button" id="filter-toggle" class="filter-toggle" data-filter-toggle="job-classes" aria-controls="filter-panel"></button>
-          <aside id="filter-panel" class="search-sidebar" aria-labelledby="filter-panel-title" data-open="false">
-            <div class="search-panel-header"><h2 class="search-panel-title" id="filter-panel-title">Filter</h2><button type="button" id="reset-filters-button" class="action-button" aria-label="Reset search and filters" title="Reset search and filters"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button></div>
-            <div class="search-input-field"><label for="job-search-input">Search title, class code, or pay</label><input type="search" id="job-search-input" data-search-input placeholder="Try analyst, nurse, 037A…" autocomplete="off"></div>
-            <div class="job-sort-controls"><label for="job-sort">Sort by</label><select id="job-sort"><option value="title">Title</option><option value="job_class_code">Class code</option><option value="min_yearly">Minimum yearly pay</option><option value="max_yearly">Maximum yearly pay</option><option value="min_hourly">Minimum hourly pay</option><option value="max_hourly">Maximum hourly pay</option><option value="hours_per_period">Hours per biweekly period</option><option value="number_of_steps">Number of steps</option></select><label for="job-sort-direction">Direction</label><select id="job-sort-direction"><option value="asc">A to Z / Low to high</option><option value="desc">Z to A / High to low</option></select></div>
-            <fieldset class="search-facet-group" id="titlegroup-facet"><legend>Title group</legend><details class="mm-facet-group"><summary>All title groups</summary><ul id="titlegroup-options" class="search-facet-list"></ul></details></fieldset>
-            <fieldset class="search-facet-group" id="payband-facet"><legend>Maximum yearly pay</legend><details class="mm-facet-group"><summary>All pay bands</summary><ul id="payband-options" class="search-facet-list"></ul></details></fieldset>
-            <fieldset class="search-facet-group" id="hours-facet"><legend>Hours per biweekly period</legend><details class="mm-facet-group"><summary>All schedules</summary><ul id="hours-options" class="search-facet-list"></ul></details></fieldset>
-            <fieldset class="search-facet-group" id="steps-facet"><legend>Number of pay steps</legend><details class="mm-facet-group"><summary>All step counts</summary><ul id="steps-options" class="search-facet-list"></ul></details></fieldset>
-          </aside>
-        </div>
+        <div class="search-side" data-filter-column="filters.json" data-filter-name="job-classes"></div>
         <div class="search-results">
-          <p id="job-results-count" class="search-results-count app-help-text" role="status" aria-live="polite" aria-atomic="true">Loading job classes and pay rates…</p>
+          <p id="job-results-count" class="search-results-count app-help-text" data-filter-results>Loading job classes and pay rates…</p>
           <p id="job-feed-status" class="app-help-text" hidden></p>
           <div id="job-summary" class="job-summary" hidden><span><strong id="job-total">0</strong> job classes</span><span><strong id="job-pay-schedules">0</strong> biweekly schedules</span><span><strong id="job-step-patterns">0</strong> step patterns</span><span><strong id="job-highest">—</strong> highest yearly maximum</span></div>
           <section id="job-compare" class="app-card job-compare" aria-labelledby="job-compare-title" hidden><div class="job-inline-heading"><h2 id="job-compare-title">Compare selected job classes</h2><button type="button" id="job-clear-compare" class="action-button">Clear comparison</button></div><p id="job-compare-summary" class="app-help-text" role="status" aria-live="polite"></p><div id="job-compare-table" class="app-table-wrap"></div></section>
-          <p id="job-empty" class="app-empty" hidden>No job classes match your search.</p>
+          <div class="job-sort-controls"><label for="job-sort">Sort by</label><select id="job-sort"><option value="title">Title</option><option value="job_class_code">Class code</option><option value="min_yearly">Minimum yearly pay</option><option value="max_yearly">Maximum yearly pay</option><option value="min_hourly">Minimum hourly pay</option><option value="max_hourly">Maximum hourly pay</option><option value="hours_per_period">Hours per biweekly period</option><option value="number_of_steps">Number of steps</option></select><label for="job-sort-direction">Direction</label><select id="job-sort-direction"><option value="asc">A to Z / Low to high</option><option value="desc">Z to A / High to low</option></select></div>
           <ul id="job-results" class="search-results-list" aria-label="Job classifications"></ul>
           <div id="job-exports" class="job-exports" hidden><button type="button" id="job-export-csv" class="action-button">Export filtered CSV</button><button type="button" id="job-export-json" class="action-button">Export filtered JSON</button></div>
         </div>

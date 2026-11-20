@@ -1,0 +1,45 @@
+{
+  "$schema": "vendor/marinos/filter-panel.schema.json",
+  "schemaVersion": "1.0.0",
+  "search": {
+    "id": "job-search-input"
+  },
+  "groups": [
+    {
+      "type": "checkbox",
+      "id": "titlegroup",
+      "label": "Title groups",
+      "allLabel": "All title groups",
+      "options": {
+        "app": true
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "payband",
+      "label": "Pay bands",
+      "allLabel": "All pay bands",
+      "options": {
+        "app": true
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "hours",
+      "label": "Biweekly hours",
+      "allLabel": "All biweekly hours",
+      "options": {
+        "app": true
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "steps",
+      "label": "Step counts",
+      "allLabel": "All step counts",
+      "options": {
+        "app": true
+      }
+    }
+  ]
+}

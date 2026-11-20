@@ -16,6 +16,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / 'assets'
 RECORDS = json.loads((ROOT / 'tests/fixtures/job-pay-sample.json').read_text())
+FILTERS = json.loads((ROOT / 'filters.json').read_text())
 
 
 def require(condition, message):
@@ -38,14 +39,17 @@ def main():
             errors = []
             page.on('pageerror', lambda exc: errors.append(str(exc)))
             page.set_content(markup)
-            page.evaluate("""(records) => {
+            page.evaluate("""([records, filters]) => {
                 window.__downloads = [];
                 window.__lastURL = '';
                 window.history.replaceState = (state, title, url) => { window.__lastURL = url; };
                 window.marinDownload = (download) => { window.__downloads.push(download); };
-                window.fetch = async () => ({ ok: true, json: async () => records });
-            }""", RECORDS)
-            for filename in ('search-layout.js', 'job-pay-core.js', 'app.js'):
+                window.fetch = async (url) => ({ ok: true, json: async () => (String(url).includes('filters.json') ? filters : records) });
+            }""", [RECORDS, FILTERS])
+            page.add_script_tag(content=(ROOT / 'vendor/marinos/marinos.js').read_text())
+            # The shell defines its own download helper; the test records downloads instead of saving them.
+            page.evaluate("() => { window.marinDownload = (download) => { window.__downloads.push(download); }; }")
+            for filename in ('job-pay-core.js', 'app.js'):
                 page.add_script_tag(content=(SCRIPTS / filename).read_text())
             page.wait_for_function("document.querySelector('#job-total').textContent === '5'")
             require(page.locator('#job-results > li').count() == 5, 'All rows rendered')
@@ -58,14 +62,14 @@ def main():
             require(page.locator('#job-results > li[data-job-id="2"] table tbody tr').count() == 3, 'Published steps only')
             page.locator('#job-search-input').fill('037A')
             page.wait_for_function("document.querySelector('#job-results-count').textContent === '1 of 5 job classes'")
-            require(page.evaluate("window.__lastURL.includes('q=037a')"), 'URL state updated: ' + repr(page.evaluate('window.__lastURL')))
+            require(page.evaluate("window.__lastURL.includes('q=037A')"), 'URL state updated: ' + repr(page.evaluate('window.__lastURL')))
             require(page.locator('#job-results > li:visible').count() == 1, 'Query filters list')
-            page.locator('#reset-filters-button').click()
+            page.locator('#job-classes-filter-panel .action-button').click()
             require(page.locator('#job-results > li:visible').count() == 5, 'Reset shows all')
             page.locator('#payband-facet details').evaluate('(element) => element.open = true')
             page.locator('#payband-facet input[value="250k-plus"]').check()
             require(page.locator('#job-results > li:visible').count() == 1, 'Pay-band filter works')
-            page.locator('#reset-filters-button').click()
+            page.locator('#job-classes-filter-panel .action-button').click()
             page.locator('#job-sort').select_option('max_yearly')
             page.locator('#job-sort-direction').select_option('desc')
             require(page.locator('#job-results > li').first.locator('.job-card-title').inner_text() == 'ASSISTANT COUNTY COUNSEL', 'Numeric sort desc')
@@ -85,7 +89,7 @@ def main():
             require(len(downloads) == 2, 'Both exports produced')
             require(json.loads(downloads[0]['content'])[0]['job_class_code'] == '037A', 'JSON contains filtered source record')
             require(downloads[1]['content'].count('\r\n') == 2 and '"41.09"' in downloads[1]['content'], 'CSV contains salary step')
-            page.locator('#reset-filters-button').click()
+            page.locator('#job-classes-filter-panel .action-button').click()
             page.locator('#job-search-input').fill('DANGEROUS')
             page.wait_for_function("document.querySelector('#job-results-count').textContent.startsWith('1 of 5')")
             page.locator('#job-export-csv').click()
