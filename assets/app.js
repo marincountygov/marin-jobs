@@ -160,9 +160,9 @@
     const rawJson = escapeHtml(JSON.stringify(row.raw, null, 2));
     const link = `${window.location.origin}${window.location.pathname}?q=${encodeURIComponent(row.job_class_code || row.title)}`;
     return `<li class="app-card" data-search-item data-job-id="${row.id}">
-      <div class="job-card-header"><div><h3 class="job-card-title">${escapeHtml(row.title)}</h3><p class="job-card-code">Class code: ${escapeHtml(row.job_class_code || "Not listed")}</p></div></div>
+      <div class="job-card-header"><div><h3 class="job-card-title mm-card__title">${escapeHtml(row.title)}</h3><p class="job-card-code mm-card__byline">Class code: ${escapeHtml(row.job_class_code || "Not listed")}</p></div></div>
       <p class="job-card-pay">${escapeHtml(money(row.min_yearly))}–${escapeHtml(money(row.max_yearly))} per year</p>
-      <p class="job-card-meta">${escapeHtml(money(row.min_hourly, true))}–${escapeHtml(money(row.max_hourly, true))} per hour · ${escapeHtml(row.hours_per_period ?? "Unknown")} hours/period · ${escapeHtml(row.number_of_steps)} steps</p>
+      <p class="job-card-meta mm-card__byline">${escapeHtml(money(row.min_hourly, true))}–${escapeHtml(money(row.max_hourly, true))} per hour · ${escapeHtml(row.hours_per_period ?? "Unknown")} hours/period · ${escapeHtml(row.number_of_steps)} steps</p>
       <details class="job-card-details"><summary aria-label="Pay steps and record details for ${escapeHtml(row.title)}">Pay steps and record details</summary>${stepTable(row)}
         <details><summary>Source JSON</summary><pre>${rawJson}</pre></details>
       </details>
